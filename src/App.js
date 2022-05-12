@@ -4,6 +4,7 @@ import Banner from './components/Banner';
 import Movies from './components/Movies';
 import Pagenation from './components/Pagenation';
 import Favourites from './components/Favourites';
+
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import './App.css';
 
