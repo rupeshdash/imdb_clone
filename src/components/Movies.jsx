@@ -1,19 +1,49 @@
 import React, { useEffect, useState } from "react";
+import Pagenation from "./Pagenation";
 import Image from "../banner.png";
 import axios from "axios";
 import { Rings } from "react-loader-spinner";
+
 function Movies() {
   const [movie, setMovie] = useState([]);
-  useEffect(() => {
-    axios
-      .get(
-        "https://api.themoviedb.org/3/trending/movie/week?api_key=231c3be51ba09a912d3b9aa0bd982f17"
-      )
-      .then((res) => {
-        console.table(res.data.results);
-        setMovie(res.data.results);
-      });
-  }, []);
+  const [page, setPage] = useState(1);
+  const [hover, setHover] = useState("");
+  const [favourites, setFavourites] = useState([]);
+  const pageInc = () => {
+    setPage(page + 1);
+  };
+
+  const pageDec = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+  useEffect(
+    function () {
+      axios
+        .get(
+          `https://api.themoviedb.org/3/trending/movie/week?api_key=231c3be51ba09a912d3b9aa0bd982f17&page=${page}`
+        )
+        .then((res) => {
+          //console.table(res.data.results);
+          setMovie(res.data.results);
+        });
+    },
+    [page]
+  );
+
+  // const add = (movieObj) => {
+  //   let newMovies = [...favourites, movie];
+  //   console.log(newMovies);
+  //   setFavourites([...newMovies]);
+
+  // }
+
+  let add = (movie) => {
+    let newArray = [...favourites, movie];
+    setFavourites([...newArray]);
+    console.log(newArray);
+  };
 
   return (
     <>
@@ -33,7 +63,6 @@ function Movies() {
         ) : (
           <div className="flex flex-wrap justify-center">
             {movie.map((movieObj) => {
-              console.log(movieObj.original_title);
               return (
                 <div
                   className={`
@@ -46,9 +75,49 @@ function Movies() {
                         m-4
                         hover:scale-110
                         ease-out duration-300
-                        drop-shadow-2xl	
+                        drop-shadow-2xl
+                        relative	
                     `}
+                  onMouseEnter={() => {
+                    // onsole.log(movieObj.id);
+                    setHover(movieObj.id);
+                  }}
+                  onMouseLeave={() => {
+                    setHover("");
+                  }}
                 >
+                  {hover == movieObj.id && (
+                    <>
+                      {!favourites.find((m) => m.id == movieObj.id) ? (
+                        <div
+                          className="absolute top-2 right-2
+                                    p-2
+                                    bg-gray-800
+                                    rounded-xl
+                                    text-xl
+                                    cursor-pointer
+                                    "
+                          onClick={() => add(movieObj)}
+                        >
+                          😍
+                        </div>
+                      ) : (
+                        <div
+                          className="absolute top-2 right-2
+                                    p-2
+                                    bg-gray-800
+                                    rounded-xl
+                                    text-xl
+                                    cursor-pointer
+                                    "
+                          onClick={() => add(movieObj)}
+                        >
+                          ❌
+                        </div>
+                      )}
+                    </>
+                  )}
+
                   <div className="w-full bg-gray-900 text-white py-2 font-bold text-center rounded-b-xl">
                     {movieObj.original_title}
                   </div>
@@ -58,6 +127,11 @@ function Movies() {
           </div>
         )}
       </div>
+      <Pagenation
+        pageProp={page}
+        pageInc={pageInc}
+        pageDec={pageDec}
+      ></Pagenation>
     </>
   );
 }

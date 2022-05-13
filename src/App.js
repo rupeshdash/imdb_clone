@@ -12,11 +12,11 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Navbar></Navbar>
+        <Navbar ></Navbar>
         <Routes>
           <Route path='/' element={<> <Banner></Banner>
             <Movies></Movies>
-            <Pagenation></Pagenation></>} />
+            </>} />
           
           <Route path='/favourites' element={<><Favourites></Favourites></>}/>
          
