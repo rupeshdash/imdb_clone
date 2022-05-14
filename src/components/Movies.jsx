@@ -27,6 +27,9 @@ function Movies() {
         .then((res) => {
           //console.table(res.data.results);
           setMovie(res.data.results);
+          let oldFav = localStorage.getItem("imdb");
+          oldFav = JSON.parse(oldFav);
+          setFavourites([...oldFav])
         });
     },
     [page]
@@ -43,7 +46,15 @@ function Movies() {
     let newArray = [...favourites, movie];
     setFavourites([...newArray]);
     console.log(newArray);
+    localStorage.setItem("imdb", JSON.stringify(newArray));
   };
+  let remove = (movie) => {
+    let newArray = favourites.filter((m) => m.id !== movie.id);
+    setFavourites([...newArray]);
+    console.log(newArray);
+    localStorage.setItem("imdb", JSON.stringify(newArray));
+  };
+
 
   return (
     <>
@@ -110,7 +121,7 @@ function Movies() {
                                     text-xl
                                     cursor-pointer
                                     "
-                          onClick={() => add(movieObj)}
+                          onClick={() => remove(movieObj)}
                         >
                           ❌
                         </div>
