@@ -1,33 +1,37 @@
 import React, { useState, useEffect } from "react";
 import Pagenation from "./Pagenation";
 const Favourites = () => {
-   let genreids = {
-     28: "Action",
-     12: "Adventure",
-     16: "Animation",
-     35: "Comedy",
-     80: "Crime",
-     99: "Documentary",
-     18: "Drama",
-     10751: "Family",
-     14: "Fantasy",
-     36: "History",
-     27: "Horror",
-     10402: "Music",
-     9648: "Mystery",
-     10749: "Romance",
-     878: "Sci-Fi",
-     10770: "TV",
-     53: "Thriller",
-     10752: "War",
-     37: "Western",
-   };
-    const [curGenre, setCurGenre] = useState("All Genres");
+  let genreids = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Sci-Fi",
+    10770: "TV",
+    53: "Thriller",
+    10752: "War",
+    37: "Western",
+  };
+
+  const [curGenre, setCurGenre] = useState("All Genres");
   const [favourites, setFavourites] = useState([]);
   const [genres, setGenres] = useState([]);
-
+  const [rating, setRating] = useState(0);
+  const [popularity, setPopularity] = useState(0);
+  const [search, setSearch] = useState("");
+  const [rows, setRows] = useState(5);
   const [curPage, setCurPage] = useState(1);
-  
+
   useEffect(() => {
     let oldFav = localStorage.getItem("imdb");
     // console
@@ -36,25 +40,67 @@ const Favourites = () => {
 
     setFavourites(oldFav);
   }, []);
-    useEffect(() => {
-      let temp = favourites.map((movie) => genreids[movie.genre_ids[0]]);
-      console.log(temp);
-      temp = new Set(temp);
-      setGenres(["All Genres", ...temp]);
-    }, [favourites]);
-  
-   let del = (movie) => {
-     let newArray = favourites.filter((m) => m.id != movie.id);
-     setFavourites([...newArray]);
-     localStorage.setItem("imdb", JSON.stringify(newArray));
-  };
-  
-   let filteredMovies = [];
+  useEffect(() => {
+    let temp = favourites.map((movie) => genreids[movie.genre_ids[0]]);
+    console.log(temp);
+    temp = new Set(temp);
+    setGenres(["All Genres", ...temp]);
+  }, [favourites]);
 
-   filteredMovies =
-     curGenre == "All Genres"
-       ? favourites
-       : favourites.filter((movie) => genreids[movie.genre_ids[0]] == curGenre);
+  let del = (movie) => {
+    let newArray = favourites.filter((m) => m.id != movie.id);
+    setFavourites([...newArray]);
+    localStorage.setItem("imdb", JSON.stringify(newArray));
+  };
+
+  let filteredMovies = [];
+
+  filteredMovies =
+    curGenre == "All Genres"
+      ? favourites
+      : favourites.filter((movie) => genreids[movie.genre_ids[0]] == curGenre);
+
+  if (rating === 1) {
+    filteredMovies = filteredMovies.sort((objA, objB) => {
+      return objA.vote_average - objB.vote_average;
+    });
+  } else if (rating === -1) {
+    filteredMovies = filteredMovies.sort((objA, objB) => {
+      return objB.vote_average - objA.vote_average;
+    });
+  }
+
+  if (popularity === 1) {
+    filteredMovies = filteredMovies.sort((objA, objB) => {
+      return objA.popularity - objB.popularity;
+    });
+  } else if (popularity === -1) {
+    filteredMovies = filteredMovies.sort((objA, objB) => {
+      return objB.popularity - objA.popularity;
+    });
+  }
+
+ let maxPage = Math.ceil(filteredMovies.length / rows);
+ let si = (curPage - 1) * rows;
+ let ei = Number(si) + Number(rows);
+
+ filteredMovies = filteredMovies.slice(si, ei);
+
+ let pageDec = () => {
+   if (curPage > 1) {
+     setCurPage(curPage - 1);
+   }
+ };
+
+ let pageInc = () => {
+   if (curPage < maxPage) {
+     setCurPage(curPage + 1);
+   }
+ };
+  filteredMovies = filteredMovies.filter((movie) =>
+    movie.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <>
       <div className="mt-4 px-2 flex justify-center flex-wrap space-x-2">
@@ -73,25 +119,25 @@ const Favourites = () => {
             {genre}
           </button>
         ))}
-
-        {/* <button className={
-        curGenre == "Action" ?
-          'm-2 text-lg p-1 px-2 bg-blue-400 text-white rounded-xl font-bold' :
-          'm-2 text-lg p-1 px-2 bg-gray-400 hover:bg-blue-400 text-white rounded-xl font-bold'
-      }>
-        Action
-      </button> */}
       </div>
       <div className="text-center mt-4">
         <input
           type="text"
           placeholder="search"
           className="border border-4 text-center p-1 m-2"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
         />
         <input
           type="number"
           placeholder="rows"
           className="border border-4 text-center p-1 m-2"
+          value={rows < filteredMovies.length ? rows : filteredMovies.length}
+          onChange={(e) => {
+            setRows(e.target.value);
+          }}
         />
       </div>
       <div className="flex flex-col m-4">
@@ -115,18 +161,18 @@ const Favourites = () => {
                         <img
                           src="https://img.icons8.com/external-those-icons-lineal-those-icons/24/000000/external-up-arrows-those-icons-lineal-those-icons-3.png"
                           className="mr-2 cursor-pointer"
-                          // onClick={() => {
-                          //   setPopularity(0)
-                          //   setRating(-1)
-                          // }}
+                          onClick={() => {
+                            setPopularity(0);
+                            setRating(-1);
+                          }}
                         />
                         Rating
                         <img
                           src="https://img.icons8.com/external-those-icons-lineal-those-icons/24/000000/external-down-arrows-those-icons-lineal-those-icons-4.png"
-                          // onClick={() => {
-                          //   setPopularity(0)
-                          //   setRating(1)
-                          // }}
+                          onClick={() => {
+                            setPopularity(0);
+                            setRating(1);
+                          }}
                           className="ml-2 mr-2"
                         />
                       </div>
@@ -138,20 +184,20 @@ const Favourites = () => {
                       <div className="flex">
                         <img
                           src="https://img.icons8.com/external-those-icons-lineal-those-icons/24/000000/external-up-arrows-those-icons-lineal-those-icons-3.png"
-                          // onClick={() => {
-                          //   setRating(0)
-                          //   setPopularity(-1)
-                          // }}
+                          onClick={() => {
+                            setRating(0);
+                            setPopularity(-1);
+                          }}
                           className="mr-2"
                         />
                         Popularity
                         <img
                           src="https://img.icons8.com/external-those-icons-lineal-those-icons/24/000000/external-down-arrows-those-icons-lineal-those-icons-4.png"
                           className="ml-2 mr-2"
-                          // onClick={() => {
-                          //   setRating(0)
-                          //   setPopularity(1)
-                          // }}
+                          onClick={() => {
+                            setRating(0);
+                            setPopularity(1);
+                          }}
                         />
                       </div>
                     </th>
@@ -220,9 +266,13 @@ const Favourites = () => {
           </div>
         </div>
       </div>
-      
+
       <div>
-        <Pagenation></Pagenation>
+        <Pagenation
+          pageProp={curPage}
+          pageInc={pageInc}
+          pageDec={pageDec}
+        ></Pagenation>
       </div>
     </>
   );
